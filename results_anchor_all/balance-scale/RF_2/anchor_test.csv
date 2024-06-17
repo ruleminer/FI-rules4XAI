@@ -1,0 +1,126 @@
+left_weight;left_distance;right_weight;right_distance;target;prediction;anchor_rule;anchor_rule_len;anchor_precision;anchor_coverage;anchor_precision_correct;anchor_coverage_correct
+4.0;3.0;5.0;3.0;2;2;right_weight > 4.00 AND right_distance > 2.00 AND left_distance <= 3.00;3;0.968141592920354;0.0713;0.9722222222222222;0.15217391304347827
+4.0;5.0;3.0;1.0;1;1;left_distance > 4.00 AND left_weight > 3.00 AND right_distance <= 2.00;3;1.0;0.0309;1.0;0.06837606837606838
+2.0;4.0;4.0;1.0;1;1;right_distance <= 2.00 AND left_distance > 3.00 AND right_weight <= 4.00;3;0.9052224371373307;0.1193;0.9354838709677419;0.24786324786324787
+2.0;4.0;3.0;3.0;2;2;left_weight <= 2.00 AND right_weight > 2.00 AND right_distance > 2.00;3;0.9978260869565218;0.1526;0.9871794871794872;0.3347826086956522
+4.0;5.0;2.0;1.0;1;1;left_distance > 4.00 AND left_weight > 3.00 AND right_distance <= 2.00;3;1.0;0.0288;1.0;0.06837606837606838
+5.0;1.0;4.0;1.0;1;0;right_weight > 3.00 AND left_weight > 3.00 AND left_distance <= 2.00 AND right_distance <= 2.00;4;0.44780793319415446;0.029;0.35714285714285715;0.1282051282051282
+2.0;2.0;3.0;4.0;2;2;left_weight <= 2.00 AND right_distance > 3.00 AND right_weight > 2.00;3;1.0;0.0997;1.0;0.2217391304347826
+1.0;4.0;1.0;3.0;1;1;right_weight <= 2.00 AND left_distance > 3.00 AND right_distance <= 3.00;3;0.9818840579710145;0.0931;0.9787234042553191;0.19658119658119658
+5.0;2.0;1.0;3.0;1;1;right_weight <= 2.00 AND left_weight > 4.00 AND right_distance <= 3.00;3;0.9852941176470589;0.0465;0.9615384615384616;0.10683760683760683
+2.0;1.0;5.0;1.0;2;2;right_weight > 4.00 AND left_weight <= 2.00 AND left_distance <= 2.00;3;1.0;0.0317;1.0;0.06956521739130435
+3.0;1.0;4.0;1.0;2;2;left_distance <= 2.00 AND right_weight > 3.00 AND left_weight <= 3.00;3;0.9727891156462585;0.0916;0.94;0.20434782608695654
+1.0;2.0;2.0;2.0;2;2;left_distance <= 2.00 AND left_weight <= 2.00;2;0.8493353028064993;0.163;0.8433734939759037;0.30434782608695654
+1.0;3.0;2.0;1.0;1;1;right_weight <= 2.00 AND right_distance <= 2.00 AND left_distance > 2.00;3;1.0;0.0918;1.0;0.19658119658119658
+1.0;4.0;4.0;1.0;0;2;left_weight <= 2.00 AND right_weight > 3.00 AND left_distance <= 4.00;3;0.9276315789473685;0.1206;0.9402985074626866;0.27391304347826084
+5.0;3.0;2.0;3.0;1;1;left_weight > 4.00 AND right_weight <= 2.00 AND left_distance > 2.00;3;1.0;0.0374;1.0;0.08547008547008547
+1.0;4.0;1.0;2.0;1;1;right_weight <= 2.00 AND left_distance > 3.00 AND right_distance <= 2.00;3;1.0;0.0592;1.0;0.13675213675213677
+1.0;1.0;1.0;3.0;2;2;left_weight <= 2.00 AND right_distance > 2.00 AND left_distance <= 2.00;3;0.9650793650793651;0.1016;0.9607843137254902;0.21304347826086956
+3.0;5.0;4.0;4.0;2;1;left_distance > 4.00 AND left_weight > 2.00 AND right_weight <= 4.00;3;0.9507523939808481;0.1002;0.96;0.20512820512820512
+4.0;1.0;5.0;1.0;2;0;right_distance <= 2.00 AND right_weight > 4.00 AND 3.00 < left_weight <= 4.00 AND left_distance <= 2.00;4;0.5007874015748032;0.0033;0.3333333333333333;0.02564102564102564
+3.0;2.0;3.0;2.0;0;1;right_distance <= 2.00 AND left_weight > 2.00 AND right_weight <= 3.00;3;0.9794721407624634;0.1373;0.9714285714285714;0.2905982905982906
+2.0;1.0;2.0;2.0;2;0;right_distance <= 2.00 AND left_distance <= 2.00 AND left_weight <= 2.00 AND right_weight <= 2.00;4;0.38821954484605087;0.0255;0.46153846153846156;0.15384615384615385
+2.0;1.0;5.0;4.0;2;2;left_weight <= 2.00 AND right_weight > 4.00 AND left_distance <= 2.00;3;1.0;0.0294;1.0;0.06956521739130435
+1.0;2.0;5.0;5.0;2;2;right_distance > 4.00 AND right_weight > 4.00;2;0.9751381215469613;0.0376;0.9523809523809523;0.08695652173913043
+5.0;5.0;5.0;2.0;1;1;left_weight > 4.00 AND left_distance > 4.00;2;0.9558441558441558;0.042;0.9523809523809523;0.08547008547008547
+4.0;3.0;3.0;3.0;1;0;2.00 < right_distance <= 3.00 AND 3.00 < left_weight <= 4.00 AND 2.00 < left_distance <= 3.00 AND 2.00 < right_weight <= 4.00;4;1.0;0.0028;1.0;0.05128205128205128
+1.0;5.0;3.0;1.0;1;1;left_distance > 4.00 AND right_distance <= 2.00 AND right_weight <= 3.00;3;0.9819819819819819;0.0439;0.9565217391304348;0.09401709401709402
+3.0;1.0;2.0;3.0;2;2;left_distance <= 2.00 AND right_distance > 2.00 AND left_weight <= 3.00;3;0.9204771371769384;0.1447;0.9066666666666666;0.2956521739130435
+5.0;4.0;1.0;4.0;1;1;right_weight <= 2.00 AND left_distance > 3.00 AND left_weight > 4.00;3;1.0;0.0273;1.0;0.05982905982905983
+5.0;5.0;5.0;1.0;1;1;left_weight > 4.00 AND left_distance > 4.00;2;0.9506578947368421;0.0434;0.9523809523809523;0.08547008547008547
+3.0;1.0;2.0;2.0;2;1;right_weight <= 2.00 AND right_distance <= 2.00 AND left_weight > 2.00;3;1.0;0.0957;1.0;0.20512820512820512
+3.0;4.0;2.0;5.0;1;1;right_weight <= 2.00 AND left_distance > 3.00 AND left_weight > 2.00;3;1.0;0.0932;1.0;0.20512820512820512
+3.0;1.0;3.0;2.0;2;2;left_distance <= 2.00 AND right_weight > 2.00 AND left_weight <= 3.00;3;0.9067164179104478;0.1406;0.9315068493150684;0.2956521739130435
+2.0;3.0;2.0;5.0;2;2;right_distance > 4.00 AND left_weight <= 2.00 AND left_distance <= 3.00;3;0.9543568464730291;0.0532;0.96;0.10434782608695652
+5.0;3.0;1.0;5.0;1;1;left_weight > 4.00 AND right_weight <= 2.00 AND left_distance > 2.00;3;1.0;0.0361;1.0;0.08547008547008547
+2.0;1.0;2.0;3.0;2;2;left_weight <= 2.00 AND right_distance > 2.00 AND left_distance <= 2.00;3;0.9783393501805054;0.1005;0.9607843137254902;0.21304347826086956
+4.0;5.0;3.0;3.0;1;1;left_distance > 4.00 AND left_weight > 3.00 AND right_distance <= 3.00;3;1.0;0.0401;1.0;0.09829059829059829
+3.0;4.0;3.0;1.0;1;1;right_distance <= 2.00 AND left_distance > 3.00 AND left_weight > 2.00;3;1.0;0.0981;1.0;0.21794871794871795
+5.0;5.0;3.0;3.0;1;1;left_weight > 4.00 AND left_distance > 4.00;2;0.9547872340425532;0.038;0.9523809523809523;0.08547008547008547
+2.0;3.0;2.0;2.0;1;1;right_weight <= 2.00 AND right_distance <= 2.00 AND left_distance > 2.00;3;1.0;0.0899;1.0;0.19658119658119658
+5.0;4.0;5.0;5.0;2;2;right_distance > 4.00 AND right_weight > 4.00;2;0.976027397260274;0.0392;0.9523809523809523;0.08695652173913043
+4.0;1.0;2.0;2.0;0;1;right_distance <= 2.00 AND right_weight <= 2.00 AND left_weight > 2.00;3;1.0;0.0944;1.0;0.20512820512820512
+1.0;2.0;3.0;5.0;2;2;left_weight <= 2.00 AND right_distance > 4.00 AND right_weight > 2.00;3;1.0;0.0515;1.0;0.11739130434782609
+1.0;4.0;3.0;2.0;2;2;left_weight <= 2.00 AND right_weight > 2.00 AND left_distance <= 4.00;3;0.91005291005291;0.1858;0.9166666666666666;0.3826086956521739
+5.0;5.0;2.0;4.0;1;1;left_weight > 4.00 AND left_distance > 4.00;2;0.9612244897959183;0.0411;0.9523809523809523;0.08547008547008547
+3.0;3.0;4.0;4.0;2;2;right_distance > 3.00 AND right_weight > 3.00 AND left_distance <= 3.00;3;1.0;0.0964;1.0;0.2217391304347826
+2.0;4.0;2.0;4.0;0;1;right_weight <= 2.00 AND left_distance > 3.00 AND right_distance <= 4.00;3;0.9471153846153846;0.1192;0.95;0.24358974358974358
+3.0;1.0;3.0;1.0;0;1;right_distance <= 2.00 AND right_weight <= 3.00 AND left_weight > 2.00;3;0.9731343283582089;0.1372;0.9714285714285714;0.2905982905982906
+5.0;1.0;3.0;4.0;2;2;left_distance <= 2.00 AND right_distance > 3.00 AND right_weight > 2.00;3;1.0;0.0981;1.0;0.2217391304347826
+1.0;4.0;1.0;4.0;0;2;left_weight <= 2.00 AND 3.00 < right_distance <= 4.00 AND left_distance <= 4.00;3;0.9254807692307693;0.0648;0.9375;0.13043478260869565
+3.0;4.0;4.0;5.0;2;2;right_distance > 4.00 AND right_weight > 3.00 AND left_distance <= 4.00;3;0.9830508474576272;0.0671;1.0;0.14782608695652175
+5.0;3.0;2.0;2.0;1;1;right_weight <= 2.00 AND left_weight > 4.00 AND right_distance <= 2.00;3;1.0;0.0337;1.0;0.07692307692307693
+3.0;2.0;2.0;2.0;1;1;right_distance <= 2.00 AND right_weight <= 2.00 AND left_weight > 2.00;3;1.0;0.0927;1.0;0.20512820512820512
+1.0;1.0;3.0;1.0;2;2;left_weight <= 2.00 AND right_weight > 2.00 AND left_distance <= 2.00;3;0.95703125;0.1059;0.9607843137254902;0.21304347826086956
+3.0;1.0;2.0;5.0;2;2;right_distance > 4.00 AND left_distance <= 2.00 AND left_weight <= 3.00;3;0.9606741573033708;0.0405;0.9565217391304348;0.09565217391304348
+5.0;5.0;1.0;1.0;1;1;right_weight <= 2.00 AND left_weight > 4.00 AND left_distance > 4.00;3;1.0;0.0145;1.0;0.038461538461538464
+3.0;3.0;3.0;2.0;1;1;right_distance <= 2.00 AND left_distance > 2.00 AND left_weight > 2.00;3;0.9961089494163424;0.1462;0.9866666666666667;0.3162393162393162
+2.0;1.0;3.0;1.0;2;1;right_distance <= 2.00 AND right_weight <= 3.00;2;0.8290282902829028;0.2188;0.8378378378378378;0.3974358974358974
+4.0;3.0;2.0;5.0;1;1;right_weight <= 2.00 AND left_weight > 3.00 AND left_distance > 2.00;3;1.0;0.0936;1.0;0.19658119658119658
+2.0;4.0;3.0;1.0;1;1;right_distance <= 2.00 AND left_distance > 3.00 AND right_weight <= 3.00;3;0.9741379310344828;0.0836;0.9777777777777777;0.18803418803418803
+1.0;2.0;2.0;1.0;0;1;right_weight <= 2.00 AND right_distance <= 2.00;2;0.912109375;0.1544;0.8961038961038961;0.2948717948717949
+5.0;4.0;1.0;5.0;1;1;right_weight <= 2.00 AND left_weight > 4.00 AND left_distance > 3.00;3;1.0;0.0266;1.0;0.05982905982905983
+4.0;5.0;2.0;3.0;1;1;right_weight <= 2.00 AND left_distance > 4.00 AND left_weight > 3.00;3;1.0;0.0319;1.0;0.07264957264957266
+2.0;3.0;4.0;3.0;2;2;left_weight <= 2.00 AND right_weight > 3.00 AND right_distance > 2.00;3;1.0;0.106;1.0;0.23043478260869565
+5.0;1.0;2.0;5.0;2;2;right_distance > 4.00 AND left_distance <= 2.00;2;0.8948247078464107;0.0846;0.9024390243902439;0.1608695652173913
+5.0;4.0;3.0;4.0;1;1;left_weight > 4.00 AND left_distance > 3.00 AND right_weight <= 3.00;3;1.0;0.0404;1.0;0.09401709401709402
+3.0;3.0;1.0;1.0;1;1;right_weight <= 2.00 AND right_distance <= 2.00 AND left_weight > 2.00;3;1.0;0.0946;1.0;0.20512820512820512
+1.0;3.0;2.0;2.0;2;1;right_distance <= 2.00 AND right_weight <= 2.00 AND left_distance > 2.00;3;1.0;0.0928;1.0;0.19658119658119658
+2.0;3.0;5.0;2.0;2;2;left_weight <= 2.00 AND right_weight > 4.00 AND left_distance <= 3.00;3;0.9661654135338346;0.0441;0.9565217391304348;0.09565217391304348
+5.0;2.0;3.0;1.0;1;1;right_distance <= 2.00 AND left_weight > 4.00 AND right_weight <= 3.00;3;0.9706959706959707;0.0495;0.9629629629629629;0.1111111111111111
+2.0;5.0;3.0;1.0;1;1;left_distance > 4.00 AND right_distance <= 2.00 AND right_weight <= 3.00;3;0.9514563106796117;0.0433;0.9565217391304348;0.09401709401709402
+3.0;1.0;5.0;3.0;2;2;right_weight > 4.00 AND right_distance > 2.00 AND left_distance <= 2.00;3;1.0;0.0435;1.0;0.10434782608695652
+1.0;1.0;5.0;5.0;2;2;right_distance > 4.00 AND right_weight > 4.00;2;0.9743589743589743;0.0375;0.9523809523809523;0.08695652173913043
+1.0;4.0;2.0;3.0;2;2;left_weight <= 2.00 AND right_distance > 2.00 AND left_distance <= 4.00;3;0.8809946714031972;0.1975;0.8979591836734694;0.3826086956521739
+2.0;2.0;2.0;4.0;2;2;left_weight <= 2.00 AND right_distance > 3.00 AND left_distance <= 2.00;3;0.9665271966527197;0.0674;0.9696969696969697;0.1391304347826087
+5.0;2.0;4.0;4.0;2;2;left_distance <= 2.00 AND right_distance > 3.00 AND right_weight > 3.00;3;1.0;0.0612;1.0;0.14782608695652175
+2.0;4.0;5.0;1.0;1;1;right_distance <= 2.00 AND left_distance > 3.00;2;0.88558352402746;0.1603;0.8734177215189873;0.2948717948717949
+5.0;4.0;4.0;3.0;1;1;left_weight > 4.00 AND left_distance > 3.00 AND right_distance <= 3.00;3;1.0;0.0502;1.0;0.10683760683760683
+1.0;3.0;5.0;1.0;2;2;left_weight <= 2.00 AND right_weight > 4.00 AND left_distance <= 3.00;3;0.9633333333333334;0.0452;0.9565217391304348;0.09565217391304348
+3.0;5.0;2.0;3.0;1;1;right_weight <= 2.00 AND left_distance > 4.00 AND left_weight > 2.00;3;1.0;0.0497;1.0;0.10683760683760683
+5.0;1.0;3.0;3.0;2;2;left_distance <= 2.00 AND right_distance > 2.00 AND right_weight > 2.00;3;0.9898348157560356;0.1492;0.9868421052631579;0.32608695652173914
+3.0;5.0;4.0;5.0;2;0;left_distance > 4.00 AND right_distance > 4.00 AND 3.00 < right_weight <= 4.00 AND 2.00 < left_weight <= 3.00;4;1.0;0.0;1.0;0.02564102564102564
+1.0;3.0;3.0;1.0;0;2;left_weight <= 2.00 AND right_weight > 2.00 AND left_distance <= 3.00;3;0.9284009546539379;0.1481;0.918918918918919;0.2956521739130435
+4.0;1.0;5.0;4.0;2;2;left_distance <= 2.00 AND right_weight > 4.00 AND right_distance > 2.00;3;1.0;0.0468;1.0;0.10434782608695652
+4.0;2.0;2.0;1.0;1;1;right_distance <= 2.00 AND right_weight <= 2.00 AND left_weight > 2.00;3;1.0;0.0964;1.0;0.20512820512820512
+2.0;4.0;2.0;5.0;2;1;right_weight <= 2.00 AND 3.00 < left_distance <= 4.00;2;0.9109195402298851;0.0702;0.9166666666666666;0.14102564102564102
+5.0;4.0;4.0;5.0;0;1;left_weight > 4.00 AND left_distance > 3.00 AND right_weight <= 4.00;3;1.0;0.0553;1.0;0.1282051282051282
+4.0;4.0;1.0;1.0;1;1;right_distance <= 2.00 AND right_weight <= 2.00 AND left_weight > 2.00;3;1.0;0.09;1.0;0.20512820512820512
+5.0;3.0;2.0;5.0;1;1;left_weight > 4.00 AND right_weight <= 2.00 AND left_distance > 2.00;3;1.0;0.038;1.0;0.08547008547008547
+2.0;2.0;5.0;5.0;2;2;left_weight <= 2.00 AND right_weight > 4.00 AND left_distance <= 2.00;3;1.0;0.0282;1.0;0.06956521739130435
+3.0;5.0;1.0;1.0;1;1;right_distance <= 2.00 AND left_distance > 4.00 AND left_weight > 2.00;3;1.0;0.0481;1.0;0.10683760683760683
+3.0;1.0;1.0;1.0;1;1;right_weight <= 2.00 AND left_weight > 2.00 AND right_distance <= 2.00;3;1.0;0.0937;1.0;0.20512820512820512
+3.0;3.0;1.0;2.0;1;1;right_distance <= 2.00 AND right_weight <= 2.00 AND left_weight > 2.00;3;1.0;0.0912;1.0;0.20512820512820512
+1.0;2.0;1.0;5.0;2;2;left_weight <= 2.00 AND right_distance > 3.00 AND left_distance <= 2.00;3;0.9761194029850746;0.0605;0.9696969696969697;0.1391304347826087
+5.0;3.0;5.0;1.0;1;1;right_distance <= 2.00 AND left_weight > 3.00 AND left_distance > 2.00;3;1.0;0.1024;1.0;0.2222222222222222
+1.0;5.0;1.0;2.0;1;1;right_weight <= 2.00 AND right_distance <= 2.00 AND left_distance > 2.00;3;1.0;0.0859;1.0;0.19658119658119658
+2.0;4.0;4.0;4.0;2;2;left_weight <= 2.00 AND right_distance > 3.00 AND right_weight > 2.00;3;1.0;0.1019;1.0;0.2217391304347826
+3.0;2.0;4.0;3.0;2;2;left_distance <= 2.00 AND right_weight > 3.00 AND right_distance > 2.00;3;1.0;0.1007;1.0;0.2217391304347826
+3.0;1.0;5.0;5.0;2;2;right_distance > 4.00 AND right_weight > 4.00;2;0.9597069597069597;0.0405;0.9523809523809523;0.08695652173913043
+4.0;2.0;4.0;3.0;2;2;left_distance <= 2.00 AND right_weight > 3.00 AND right_distance > 2.00;3;1.0;0.1009;1.0;0.2217391304347826
+3.0;1.0;5.0;2.0;2;2;right_weight > 4.00 AND left_distance <= 2.00 AND left_weight <= 3.00;3;0.9629629629629629;0.043;0.9565217391304348;0.09565217391304348
+2.0;4.0;1.0;4.0;1;1;right_weight <= 2.00 AND left_distance > 3.00 AND right_distance <= 4.00;3;0.9411764705882353;0.1197;0.95;0.24358974358974358
+5.0;2.0;2.0;5.0;0;1;left_weight > 4.00 AND right_weight <= 2.00;2;0.9224283305227656;0.0754;0.918918918918919;0.1452991452991453
+4.0;2.0;5.0;2.0;2;0;right_weight > 4.00 AND left_weight > 3.00 AND right_distance <= 2.00 AND left_distance <= 2.00;4;0.5133903133903134;0.0143;0.42857142857142855;0.07692307692307693
+3.0;2.0;2.0;5.0;2;2;right_distance > 4.00 AND left_distance <= 2.00 AND left_weight <= 3.00;3;0.9656992084432717;0.0437;0.9565217391304348;0.09565217391304348
+2.0;5.0;2.0;2.0;1;1;right_weight <= 2.00 AND left_distance > 4.00 AND right_distance <= 2.00;3;1.0;0.0292;1.0;0.06837606837606838
+1.0;4.0;2.0;2.0;0;1;right_weight <= 2.00 AND left_distance > 3.00 AND right_distance <= 2.00;3;1.0;0.0613;1.0;0.13675213675213677
+3.0;4.0;4.0;1.0;1;1;right_distance <= 2.00 AND left_distance > 3.00 AND left_weight > 2.00;3;1.0;0.1008;1.0;0.21794871794871795
+1.0;5.0;2.0;5.0;2;2;right_distance > 4.00 AND left_weight <= 2.00;2;0.9040511727078892;0.0797;0.8837209302325582;0.16521739130434782
+4.0;3.0;4.0;4.0;2;2;right_weight > 3.00 AND right_distance > 3.00 AND left_distance <= 3.00;3;1.0;0.1012;1.0;0.2217391304347826
+2.0;5.0;1.0;3.0;1;1;right_weight <= 2.00 AND left_distance > 4.00 AND right_distance <= 3.00;3;0.9693877551020408;0.0426;0.9565217391304348;0.09401709401709402
+1.0;3.0;3.0;4.0;2;2;left_weight <= 2.00 AND right_distance > 3.00 AND right_weight > 2.00;3;1.0;0.103;1.0;0.2217391304347826
+2.0;2.0;2.0;1.0;1;1;right_weight <= 2.00 AND right_distance <= 2.00;2;0.9070208728652751;0.1561;0.8961038961038961;0.2948717948717949
+1.0;3.0;5.0;3.0;2;2;left_weight <= 2.00 AND right_weight > 4.00 AND right_distance > 2.00;3;1.0;0.0487;1.0;0.11304347826086956
+4.0;1.0;2.0;3.0;2;2;left_distance <= 2.00 AND right_distance > 2.00 AND left_weight <= 4.00;3;0.8940568475452196;0.1951;0.8613861386138614;0.3782608695652174
+5.0;4.0;2.0;4.0;1;1;right_weight <= 2.00 AND left_weight > 4.00;2;0.9629629629629629;0.0679;0.918918918918919;0.1452991452991453
+1.0;5.0;4.0;4.0;2;2;left_weight <= 2.00 AND right_weight > 3.00 AND right_distance > 2.00;3;1.0;0.1023;1.0;0.23043478260869565
+5.0;4.0;2.0;5.0;1;1;right_weight <= 2.00 AND left_weight > 4.00 AND left_distance > 3.00;3;1.0;0.0264;1.0;0.05982905982905983
+3.0;3.0;3.0;1.0;1;1;right_distance <= 2.00 AND left_weight > 2.00 AND left_distance > 2.00;3;0.9727047146401985;0.1433;0.9866666666666667;0.3162393162393162
+5.0;4.0;2.0;1.0;1;1;right_distance <= 2.00 AND left_weight > 2.00 AND left_distance > 3.00;3;1.0;0.1049;1.0;0.21794871794871795
+2.0;4.0;3.0;2.0;1;0;right_distance <= 2.00 AND left_weight <= 2.00 AND 2.00 < right_weight <= 4.00 AND 3.00 < left_distance <= 4.00;4;0.2923497267759563;0.0062;0.5;0.05128205128205128
+2.0;1.0;4.0;1.0;2;0;3.00 < right_weight <= 4.00 AND right_distance <= 2.00 AND left_distance <= 2.00 AND left_weight <= 4.00;4;0.25757575757575757;0.0286;0.26666666666666666;0.10256410256410256
+5.0;3.0;5.0;4.0;2;2;right_weight > 4.00 AND right_distance > 3.00 AND left_distance <= 3.00;3;1.0;0.0459;1.0;0.10434782608695652
+2.0;5.0;1.0;4.0;1;1;left_distance > 4.00 AND right_weight <= 2.00 AND right_distance <= 4.00;3;0.9408450704225352;0.0628;0.9354838709677419;0.12393162393162394
+4.0;2.0;3.0;3.0;2;2;left_distance <= 2.00 AND right_distance > 2.00 AND right_weight > 2.00;3;0.9883527454242929;0.1544;0.9868421052631579;0.32608695652173914
+2.0;3.0;3.0;4.0;2;2;left_weight <= 2.00 AND right_weight > 2.00 AND right_distance > 3.00;3;1.0;0.0963;1.0;0.2217391304347826

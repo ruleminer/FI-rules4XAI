@@ -1,0 +1,1 @@
+{"r2_score_train": 0.9995682094736639, "r2_score_test": 0.3456442047112501, "mean_absolute_error_train": 0.24226562500000015, "mean_absolute_error_test": 13.896458333333333, "mean_squared_error_train": 0.3318369140625003, "mean_squared_error_test": 385.22410607638875, "time": 0.9629998207092285}

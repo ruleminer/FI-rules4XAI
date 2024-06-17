@@ -1,0 +1,1391 @@
+---
+title: "Rule4XAI - C2"
+subtitle: "Supplementary materials" 
+format: 
+  html: 
+    self-contained: true
+    toc: true
+    df-print: paged
+execute: 
+  warning: false
+  echo: false
+---
+
+```{r}
+measure1 = "precision"
+measure2 = "Prec"
+```
+
+```{r}
+library(tidyverse)
+library(glue)
+library(corrr)
+library(scales)
+library(ggtext)
+
+theme_set(theme_light())
+
+options(knitr.kable.NA = '-', knitr.kable.digits = 2)
+```
+
+```{r}
+stats <- function(data, variable){
+  
+  data %>% 
+    filter(name %in% variable) %>%
+    filter(!is.na(value)) %>% 
+    group_by(model_bb, approx) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2)
+
+}
+```
+
+# Data description
+
+```{r}
+# final_models <- read_csv("results/selected_bb_models.csv")
+# datasets <- unique(final_models$dataset)
+# 
+# datasets_stats <- data.frame()
+# 
+# for(dataset in datasets){
+#   
+#   d <- read_csv(glue("data_csv/{dataset}.csv"))
+#   d_train <- read_csv(glue("results_all/{dataset}/train.csv"))
+#   d_test <- read_csv(glue("results_all/{dataset}/test.csv"))
+#   
+#   d_attrs <- d %>% 
+#     select(-class)
+#   
+#   d_num_attrs <- d_attrs %>% 
+#     select(where(is.numeric))
+#   
+#   class_dist <- d %>% 
+#     count(class) %>% 
+#     mutate(proc=round(n/sum(n),2)) %>% 
+#     arrange(desc(proc))
+#   
+#   dataset_stats <- data.frame(name=dataset, obs_train=nrow(d_train), obs_test=nrow(d_test), 
+#                               attr_num=ncol(d_num_attrs), attr_cat=ncol(d_attrs)-ncol(d_num_attrs),
+#                               target_n=length(unique(d$class)), target_dist=paste0(class_dist$proc, collapse = " "))
+#   
+#   datasets_stats <- bind_rows(datasets_stats, dataset_stats)
+#   
+# }
+# 
+# write_csv(datasets_stats, file="results/data_characteristcs.csv")
+
+datasets_stats <- read_csv("results/data_characteristcs.csv")
+
+datasets_stats %>% 
+  knitr::kable(col.names = c("Dataset", "Obs. train", "Obs. test", 
+                             "Numeric attr.", "Categorical attr.", 
+                             "No. class", "Class distribution"),
+               caption = "Analysed dataset characteristics")
+
+```
+
+# Black-box models
+
+```{r}
+final_models <- read_csv("results/selected_bb_models.csv")
+
+final_models_bacc <- final_models %>% 
+  select(dataset, model_type, bacc_test, bacc_train) %>% 
+  mutate(model_type=ifelse(model_type=="SVC", "SVM", model_type)) %>% 
+  pivot_longer(bacc_test:bacc_train) %>% 
+  mutate(name=str_to_title(str_remove(name, "bacc_")))
+         # name=factor(name, levels=c("TRAIN", "TEST"), ordered = T),
+         # model_type=factor(model_type, levels=c("SVC", "RF", "XGB"), ordered = T))
+
+ggplot(final_models_bacc, aes(x=value, y=model_type, fill=name)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="") +
+  xlab("Balanced accuracy") +
+  ylab("Model type") +
+  theme(legend.position = "top")
+
+```
+
+```{r}
+final_models_bacc %>% 
+  group_by(model_type, name) %>% 
+  summarise(#min_bacc=min(value),
+            q1_bacc=quantile(value, 0.25),
+            mean_bacc=mean(value),
+            median_bacc=median(value),
+            q3_bacc=quantile(value, 0.75),
+            #max_bacc=max(value)
+            ) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Dataset", "Q1", "Mean", "Median", "Q3"))
+
+```
+
+
+```{r}
+final_models_bacc %>% 
+  pivot_wider() %>% 
+  select(dataset, model_type, Train, Test) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "Train", "Test"))
+```
+
+# Original decisions of RuleKit and RMatrix vs black-box decisions
+
+Rule model is trained on original target and results are compared with black-box decisions. Thus we wanted to verify hipothesis that we don't need to approximate black-box model because rule model have almost identical decisions.
+
+```{r}
+rmatrix_target <- read_csv(glue("results/rmatrix_models_stats_filterT_{measure1}_target.csv")) %>% 
+  filter(!is.na(measure)) %>% 
+  separate(model, c("model_bb", "model_number"), "_")
+
+measure2 <- ifelse(measure2 == "c2", toupper(measure2), measure2)
+
+rk_stats <- read_csv("results/rk_stats_all.csv") %>% 
+  separate(model, c("model_rk", "rk_cat"), "_") %>% 
+  filter(rk_cat==measure2) %>% 
+  select(dataset, rk_cat, avg_rule_coverage, avg_rule_precision, rules_count)
+
+rk_target <- read_csv("results/bb_rk_stats_all.csv") %>% 
+  filter(rk_cat==measure2) %>% 
+  left_join(., rk_stats)
+
+rk_target_long <- rk_target %>% 
+  select(dataset, model_bb, kappa_train:kappa_test, avg_rule_coverage:rules_count) %>% 
+  pivot_longer(kappa_train:rules_count) %>% 
+  filter(!is.na(value)) %>% 
+  mutate(approx="RuleKit")
+
+rmatrix_target_long <- rmatrix_target %>% 
+  select(dataset, model_bb, kappa_train:kappa_test, avg_rule_coverage:rules_count, -avg_conditions_count) %>% 
+  pivot_longer(kappa_train:rules_count) %>% 
+  filter(!is.na(value)) %>% 
+  mutate(approx="RMatrix")
+
+target_long <- bind_rows(rk_target_long, rmatrix_target_long) %>% 
+  mutate(model_bb=ifelse(model_bb=="SVC", "SVM", model_bb))
+
+```
+
+::: panel-tabset
+
+## Kappa cohen coefficient - train dataset
+
+```{r}
+selected_variable = "kappa_train"
+xlabel = "Cohen kappa coefficient"
+
+target_long %>% 
+  filter(name==selected_variable) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=approx)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="Approximator") +
+  xlab(xlabel) +
+  ylab("Model type") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+```
+
+```{r}
+stats(target_long, c(selected_variable)) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Approximator", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+target_long %>% 
+  filter(name==selected_variable) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = approx, values_from = value) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "RuleKit", "RMatrix"))
+```
+
+## Kappa cohen coefficient - test dataset
+
+```{r}
+selected_variable = "kappa_test"
+xlabel = "Cohen kappa coefficient"
+
+target_long %>% 
+  filter(name==selected_variable) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=approx)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="Approximator") +
+  xlab(xlabel) +
+  ylab("Model type") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+```
+
+```{r}
+stats(target_long, c(selected_variable)) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Approximator", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+target_long %>% 
+  filter(name==selected_variable) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = approx, values_from = value) %>%
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "RuleKit", "RMatrix"))
+```
+
+:::
+
+::: panel-tabset
+## Average rule coverage
+
+```{r}
+selected_variable = "avg_rule_coverage"
+xlabel = "Average rule coverage"
+
+target_long %>% 
+  filter(name==selected_variable) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=approx)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="Approximator") +
+  xlab(xlabel) +
+  ylab("Model type") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+```
+
+```{r}
+stats(target_long, c(selected_variable)) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Approximator", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+target_long %>% 
+  filter(name==selected_variable) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = approx, values_from = value) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "RuleKit", "RMatrix"))
+```
+
+## Average rule precision
+
+```{r}
+selected_variable = "avg_rule_precision"
+xlabel = "Average rule precision"
+
+target_long %>% 
+  filter(name==selected_variable) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=approx)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="Approximator") +
+  xlab(xlabel) +
+  ylab("Model type") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+```
+
+```{r}
+stats(target_long, c(selected_variable)) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Approximator", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+target_long %>% 
+  filter(name==selected_variable) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = approx, values_from = value) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "RuleKit", "RMatrix"))
+```
+
+## Rule count
+
+```{r}
+selected_variable = "rules_count"
+xlabel = "Rule count"
+
+target_long %>% 
+  filter(name==selected_variable) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=approx)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="Approximator") +
+  xlab(xlabel) +
+  ylab("Model type") +
+  theme(legend.position = "top")
+```
+
+```{r}
+stats(target_long, c(selected_variable)) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Approximator", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+target_long %>% 
+  filter(name==selected_variable) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = approx, values_from = value) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "RuleKit", "RMatrix"))
+```
+
+:::
+
+
+# Approximation of black-box decisions - RuleKit vs RMatrix
+
+Rule model is trained on black-box decisions and results are compared with black-box decisions. Thus we wanted to verify hipothesis that rule models can be explain well decisions of black-box models.
+
+```{r}
+rmatrix_approx <- read_csv(glue("results/rmatrix_models_stats_filterT_{measure1}_approx.csv")) %>% 
+  separate(model, c("model_bb", "model_number"), "_")
+
+rk_approx <- read_csv("results/rk_approx_stats_all.csv") %>% 
+  filter(rk_cat==measure2)
+
+rk_approx_long <- rk_approx %>% 
+  select(dataset, model_bb, kappa_train:kappa_test, avg_rule_coverage:rules_count, -avg_rule_quality) %>% 
+  pivot_longer(kappa_train:rules_count) %>% 
+  filter(!is.na(value)) %>% 
+  mutate(approx="RuleKit")
+
+rmatrix_approx_long <- rmatrix_approx %>% 
+  select(dataset, model_bb, kappa_train:kappa_test, avg_rule_coverage:rules_count, -avg_conditions_count) %>% 
+  pivot_longer(kappa_train:rules_count) %>% 
+  filter(!is.na(value)) %>% 
+  mutate(approx="RMatrix")
+
+approx_long <- bind_rows(rk_approx_long, rmatrix_approx_long) %>% 
+  mutate(model_bb=ifelse(model_bb=="SVC", "SVM", model_bb))
+
+```
+
+::: panel-tabset
+
+## Kappa cohen coefficient - train dataset
+
+```{r}
+selected_variable = "kappa_train"
+xlabel = "Cohen kappa coefficient"
+
+approx_long %>% 
+  filter(name==selected_variable) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=approx)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="Approximator") +
+  xlab(xlabel) +
+  ylab("Model type") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+```
+
+```{r}
+stats(approx_long, c(selected_variable)) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Approximator", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+approx_long %>% 
+  filter(name==selected_variable) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = approx, values_from = value) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "RuleKit", "RMatrix"))
+```
+
+## Kappa cohen coefficient - test dataset
+
+```{r}
+selected_variable = "kappa_test"
+xlabel = "Cohen kappa coefficient"
+
+approx_long %>% 
+  filter(name==selected_variable) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=approx)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="Approximator") +
+  xlab(xlabel) +
+  ylab("Model type") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+```
+
+```{r}
+stats(approx_long, c(selected_variable)) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Approximator", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+approx_long %>% 
+  filter(name==selected_variable) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = approx, values_from = value) %>%
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "RuleKit", "RMatrix"))
+```
+
+:::
+
+
+::: panel-tabset
+## Average rule coverage
+
+```{r}
+selected_variable = "avg_rule_coverage"
+xlabel = "Average rule coverage"
+
+approx_long %>% 
+  filter(name==selected_variable) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=approx)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="Approximator") +
+  xlab(xlabel) +
+  ylab("Model type") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+```
+
+```{r}
+stats(approx_long, c(selected_variable)) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Approximator", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+approx_long %>% 
+  filter(name==selected_variable) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = approx, values_from = value) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "RuleKit", "RMatrix"))
+```
+
+## Average rule precision
+
+```{r}
+selected_variable = "avg_rule_precision"
+xlabel = "Average rule precision"
+
+approx_long %>% 
+  filter(name==selected_variable) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=approx)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="Approximator") +
+  xlab(xlabel) +
+  ylab("Model type") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+```
+
+```{r}
+stats(approx_long, c(selected_variable)) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Approximator", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+approx_long %>% 
+  filter(name==selected_variable) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = approx, values_from = value) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "RuleKit", "RMatrix"))
+```
+
+## Rule count
+
+```{r}
+selected_variable = "rules_count"
+xlabel = "Rule count"
+
+approx_long %>% 
+  filter(name==selected_variable) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=approx)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="Approximator") +
+  xlab(xlabel) +
+  ylab("Model type") +
+  theme(legend.position = "top")
+```
+
+```{r}
+stats(approx_long, c(selected_variable)) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Approximator", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+approx_long %>% 
+  filter(name==selected_variable) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = approx, values_from = value) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "RuleKit", "RMatrix"))
+```
+
+:::
+
+# Approximation of black-box decisions - RMatrix with feature importance
+
+Rule model is trained on black-box decisions with global and local feature importance and results are compared with black-box decisions. Thus we wanted to verify hipothesis that rule models with feature importance better mimic the behaviour black-box models.
+
+
+```{r}
+rmatrix_approx <- read_csv(glue("results/rmatrix_models_stats_filterT_{measure1}_approx.csv")) %>% 
+  separate(model, c("model_bb", "model_number"), "_")
+
+rmatrix_approx_long <- rmatrix_approx %>% 
+  select(dataset, model_bb, kappa_train:kappa_test, avg_rule_coverage:rules_count, -avg_conditions_count) %>% 
+  pivot_longer(kappa_train:rules_count) %>% 
+  filter(!is.na(value)) %>% 
+  mutate(approx="RMatrix without FI")
+
+rmatrix_global <- read_csv(glue("results/rmatrix_models_stats_filterT_{measure1}_global.csv")) %>% 
+  separate(model, c("model_bb", "model_number"), "_")
+
+rmatrix_global_long <- rmatrix_global %>% 
+  select(dataset, model_bb, kappa_train:kappa_test, avg_rule_coverage:rules_count, -avg_conditions_count) %>% 
+  pivot_longer(kappa_train:rules_count) %>% 
+  filter(!is.na(value)) %>% 
+  mutate(approx="RMatrix with global FI")
+
+rmatrix_local <- read_csv(glue("results/rmatrix_models_stats_filterT_{measure1}_local.csv")) %>% 
+  separate(model, c("model_bb", "model_number"), "_")
+
+rmatrix_local_long <- rmatrix_local %>% 
+  select(dataset, model_bb, kappa_train:kappa_test, avg_rule_coverage:rules_count, -avg_conditions_count) %>% 
+  pivot_longer(kappa_train:rules_count) %>% 
+  filter(!is.na(value)) %>% 
+  mutate(approx="RMatrix with local FI")
+
+rmatrix_all <- bind_rows(rmatrix_approx_long, rmatrix_global_long, rmatrix_local_long) %>% 
+  mutate(model_bb=ifelse(model_bb=="SVC", "SVM", model_bb))
+
+```
+
+```{r}
+#| include: false
+
+rmatrix_all %>% 
+  filter(name %in% c("kappa_train", "kappa_test")) %>% 
+  mutate(name=factor(name, levels=c("kappa_train", "kappa_test"), labels=c("Train", "Test")),
+         approx=factor(approx, levels=c("RMatrix without FI", "RMatrix with global FI", "RMatrix with local FI"),
+                       labels = c("RMatrix without FI", "RMatrix with global FI", "RMatrix with local FI"))) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=fct_rev(approx))) +
+  geom_boxplot() +
+  scale_fill_manual(name="Approximator", values = c("#F8766D", "#00BA38", "#619CFF"),
+                    labels = c("SC-OR with local *fo*", "SC-OR with global *fo*", "SC-OR without *fo*")) +
+  xlab("Cohen kappa coefficient") +
+  ylab("Model type") +
+  xlim(0,1) +
+  facet_wrap(~name) +
+  theme(legend.position = "top", legend.text = element_markdown())
+
+ggsave("article/approx_fo_2_v2.pdf", width = 8, height = 5)
+
+rmatrix_all %>% 
+  filter(name %in% c("avg_rule_coverage", "avg_rule_precision")) %>% 
+  mutate(name=factor(name, levels=c("avg_rule_coverage", "avg_rule_precision"), labels=c("Coverage", "Precision")),
+         approx=factor(approx, levels=c("RMatrix without FI", "RMatrix with global FI", "RMatrix with local FI"),
+                       labels = c("RMatrix without FI", "RMatrix with global FI", "RMatrix with local FI"))) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=fct_rev(approx))) +
+  geom_boxplot() +
+  scale_fill_manual(name="Approximator", values = c("#F8766D", "#00BA38", "#619CFF"),
+                    labels = c("SC-OR with local *fo*", "SC-OR with global *fo*", "SC-OR without *fo*")) +
+  xlab("Statistic's value") +
+  ylab("Model type") +
+  facet_wrap(~name, scales="free_x") +
+  theme(legend.position = "top", legend.text = element_markdown())
+
+ggsave("article/rule_prec_cov_v5.pdf", width = 8, height = 5)
+
+
+```
+
+::: panel-tabset
+
+## Cohen kappa coefficient - train dataset
+
+```{r}
+selected_variable = "kappa_train"
+xlabel = "Cohen kappa coefficient"
+
+rmatrix_all %>% 
+  filter(name==selected_variable) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=approx)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="Approximator") +
+  xlab(xlabel) +
+  ylab("Model type") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+```
+
+```{r}
+stats(rmatrix_all, c(selected_variable)) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Approximator", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+rmatrix_all %>% 
+  filter(name==selected_variable) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = approx, values_from = value) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "RMatrix without FI", "RMatrix with global FI", "RMatrix with local FI"))
+```
+
+
+## Cohen kappa coefficient - test dataset
+
+```{r}
+selected_variable = "kappa_test"
+xlabel = "Cohen kappa coefficient"
+
+rmatrix_all %>% 
+  filter(name==selected_variable) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=approx)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="Approximator") +
+  xlab(xlabel) +
+  ylab("Model type") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+```
+
+```{r}
+stats(rmatrix_all, c(selected_variable)) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Approximator", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+rmatrix_all %>% 
+  filter(name==selected_variable) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = approx, values_from = value) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "RMatrix without FI", "RMatrix with global FI", "RMatrix with local FI"))
+```
+
+:::
+
+::: panel-tabset
+
+## Average rule coverage
+
+```{r}
+selected_variable = "avg_rule_coverage"
+xlabel = "Average rule coverage"
+
+rmatrix_all %>% 
+  filter(name==selected_variable) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=approx)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="Approximator") +
+  xlab(xlabel) +
+  ylab("Model type") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+```
+
+```{r}
+stats(rmatrix_all, c(selected_variable)) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Approximator", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+rmatrix_all %>% 
+  filter(name==selected_variable) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = approx, values_from = value) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "RMatrix without FI", "RMatrix with global FI", "RMatrix with local FI"))
+```
+
+## Average rule precision
+
+```{r}
+selected_variable = "avg_rule_precision"
+xlabel = "Average rule precision"
+
+rmatrix_all %>% 
+  filter(name==selected_variable) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=approx)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="Approximator") +
+  xlab(xlabel) +
+  ylab("Model type") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+```
+
+```{r}
+stats(rmatrix_all, c(selected_variable)) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Approximator", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+rmatrix_all %>% 
+  filter(name==selected_variable) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = approx, values_from = value) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "RMatrix without FI", "RMatrix with global FI", "RMatrix with local FI"))
+```
+
+## Rule count
+
+```{r}
+selected_variable = "rules_count"
+xlabel = "Rule count"
+
+rmatrix_all %>% 
+  filter(name==selected_variable) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=approx)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="Approximator") +
+  xlab(xlabel) +
+  ylab("Model type") +
+  theme(legend.position = "top")
+```
+
+```{r}
+stats(rmatrix_all, c(selected_variable)) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Approximator", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+rmatrix_all %>% 
+  filter(name==selected_variable) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = approx, values_from = value) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "RMatrix without FI", "RMatrix with global FI", "RMatrix with local FI"))
+```
+
+:::
+
+## Correlations
+
+```{r}
+corr_without <- read_csv("results/corr_without_fi.csv") %>% 
+  mutate(corr="Without FI")
+
+corr_with_global <- read_csv("results/corr_with_fi_global.csv") %>% 
+  mutate(corr="With global FI")
+
+corr_with_local <- read_csv("results/corr_with_fi_local.csv") %>% 
+  mutate(corr="With local FI")
+
+corr_all <- bind_rows(corr_without, corr_with_global, corr_with_local) %>%
+  separate(model, c("model_bb", "bb_num"), "_") %>% 
+  filter(rmatrix==measure1) %>% 
+  mutate(model_bb=ifelse(model_bb=="SVC", "SVM", model_bb))
+
+corr_all %>% 
+  ggplot(aes(x=corr_tau_all, y=model_bb, fill=corr)) +
+  geom_boxplot() +
+  scale_fill_discrete("Feature importance used") +
+  xlab("Tau kendall") +
+  ylab("Model type") +
+  theme(legend.position = "top")
+```
+
+```{r}
+corr_all %>%
+  rename(value=corr_tau_all) %>% 
+  filter(!is.na(value)) %>% 
+    group_by(model_bb, corr) %>%
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Feature importance", "Q1", "Mean", "Median", "Q3"))
+
+```
+
+### Mean correlations
+
+```{r}
+corr_all %>% 
+  group_by(dataset, model_bb, corr) %>% 
+  summarise(mean=mean(corr_tau_all)) %>% 
+  pivot_wider(names_from = corr, values_from = mean) %>% 
+  select(dataset, model_bb, `Without FI`, `With global FI`, `With local FI`) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "Without FI", "With global FI", "With local FI"))
+```
+
+## Mutual inclusion
+
+```{r}
+mi_without <- read_csv("results/mutual_inclusion_without_fi.csv") %>% 
+  separate(model, c("model_bb", "bb_num"), "_") %>% 
+  filter(rmatrix==measure1) %>% 
+  mutate(level="Without FI")
+
+mi_local <- read_csv("results/mutual_inclusion_local.csv") %>% 
+  separate(model, c("model_bb", "bb_num"), "_") %>% 
+  filter(rmatrix==measure1) %>% 
+  mutate(level="With local FI")
+
+mi_global <- read_csv("results/mutual_inclusion_global.csv") %>% 
+  separate(model, c("model_bb", "bb_num"), "_") %>% 
+  filter(rmatrix==measure1)  %>% 
+  mutate(level="With global FI")
+
+mi_all <- bind_rows(mi_without, mi_global, mi_local) %>% 
+  mutate(model_bb=ifelse(model_bb=="SVC", "SVM", model_bb))
+
+```
+
+```{r}
+xlabel = "Mutual inclusion"
+
+mi_all %>% 
+  ggplot(aes(x=mi_len, y=model_bb, fill=level)) +
+  geom_boxplot() +
+  xlab(xlabel) +
+  ylab("Model type") +
+  scale_fill_discrete("Feature importance used") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+```
+
+```{r}
+mi_all %>% 
+    select(model_bb, level, value=mi_len) %>% 
+    group_by(model_bb, level) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Feature importance", "Q1", "Mean", "Median", "Q3"))
+```
+
+### Mean mutual inclusion
+
+```{r}
+mi_all %>% 
+    select(dataset, model_bb, level, value=mi_len) %>% 
+    group_by(dataset, model_bb, level) %>% 
+    summarise(mean=mean(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+    pivot_wider(names_from = level, values_from = mean) %>% 
+  select(dataset, model_bb, `Without FI`, `With global FI`, `With local FI`) %>% 
+  mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "Without FI", "With global FI", "With local FI"))
+```
+
+# RMatrix and Anchor
+
+Comparison of RMatrix and Anchor instance rule induction
+
+## Global
+
+```{r}
+d <- read_csv("results/anchor_mi_corr_all_global.csv") %>% 
+  filter(measure==measure1) %>% 
+  separate(model, c("model_bb", "model_number"), "_") %>% 
+  select(-measure, -model_number) %>% 
+  group_by(dataset, model_bb) %>% 
+  mutate(id=row_number())
+
+d_long <- d %>%
+  pivot_longer(mi_rmatrix_anchor:anchor_coverage)
+```
+
+::: panel-tabset
+
+### Mutual inclusion
+
+```{r}
+mi <- d_long %>% 
+  filter(name %in% c("mi_anchor_fi_len", "mi_rmatrix_fi_len")) %>% 
+  mutate(name=case_when(
+    name == "mi_anchor_fi_len" ~ "Anchor",
+    name == "mi_rmatrix_fi_len" ~ "RMatrix"
+  ))
+
+ggplot(mi, aes(y=model_bb, x=value, fill=name)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="") +
+  xlab("Mutual inclusion") +
+  ylab("Model") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+```
+
+
+```{r}
+mi %>% 
+    filter(!is.na(value)) %>% 
+    group_by(model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Comparison", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+mi %>% 
+    filter(!is.na(value)) %>% 
+    group_by(dataset, model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "Comparison", "Q1", "Mean", "Median", "Q3"))
+```
+
+### Correlations
+
+```{r}
+corr <- d_long %>% 
+  filter(name %in% c("corr_tau_rmatrix", "corr_tau_anchor")) %>% 
+  mutate(name=case_when(
+    name == "corr_tau_anchor" ~ "Anchor",
+    name == "corr_tau_rmatrix" ~ "RMatrix"
+  ))
+
+ggplot(corr, aes(y=model_bb, x=value, fill=name)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="") +
+  xlab("Tau Kendall") +
+  ylab("Model") +
+  xlim(-1,1) +
+  theme(legend.position = "top")
+```
+
+```{r}
+corr %>% 
+    filter(!is.na(value)) %>% 
+    group_by(model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Comparison", "Q1", "Mean", "Median", "Q3"))
+
+```
+
+```{r}
+corr %>% 
+    filter(!is.na(value)) %>% 
+    group_by(dataset, model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "Comparison", "Q1", "Mean", "Median", "Q3"))
+
+```
+
+### Rule coverage
+
+```{r}
+anchor_stat <- d_long %>% 
+  filter(name %in% c("rmatrix_coverage", "anchor_coverage")) %>% 
+  mutate(name=case_when(
+    name == "rmatrix_coverage" ~ "RMatrix",
+    name == "anchor_coverage" ~ "Anchor"
+  ))
+
+ggplot(anchor_stat, aes(y=model_bb, x=value, fill=name)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="") +
+  xlab("Coverage") +
+  ylab("Model") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+
+```
+
+```{r}
+anchor_stat %>% 
+    filter(!is.na(value)) %>% 
+    group_by(model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Explainer", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+anchor_stat %>% 
+    filter(!is.na(value)) %>% 
+    group_by(dataset, model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "Comparison", "Q1", "Mean", "Median", "Q3"))
+```
+
+### Rule precision
+
+```{r}
+anchor_stat <- d_long %>% 
+  filter(name %in% c("rmatrix_precision", "anchor_precision")) %>% 
+  mutate(name=case_when(
+    name == "rmatrix_precision" ~ "RMatrix",
+    name == "anchor_precision" ~ "Anchor"
+  ))
+
+ggplot(anchor_stat, aes(y=model_bb, x=value, fill=name)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="") +
+  xlab("Precision") +
+  ylab("Model") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+
+```
+
+```{r}
+anchor_stat %>% 
+    filter(!is.na(value)) %>% 
+    group_by(model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Explainer", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+anchor_stat %>% 
+    filter(!is.na(value)) %>% 
+    group_by(dataset, model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "Comparison", "Q1", "Mean", "Median", "Q3"))
+```
+
+:::
+
+## Local
+
+```{r}
+d <- read_csv("results/anchor_mi_corr_all_local.csv") %>% 
+  filter(measure==measure1) %>% 
+  separate(model, c("model_bb", "model_number"), "_") %>% 
+  select(-measure, -model_number) %>% 
+  group_by(dataset, model_bb) %>% 
+  mutate(id=row_number())
+
+d_long <- d %>%
+  pivot_longer(mi_rmatrix_anchor:anchor_coverage)
+```
+
+::: panel-tabset
+
+### Mutual inclusion
+
+```{r}
+mi <- d_long %>% 
+  filter(name %in% c("mi_anchor_fi_len", "mi_rmatrix_fi_len")) %>% 
+  mutate(name=case_when(
+    name == "mi_anchor_fi_len" ~ "Anchor",
+    name == "mi_rmatrix_fi_len" ~ "RMatrix"
+  ))
+
+ggplot(mi, aes(y=model_bb, x=value, fill=name)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="") +
+  xlab("Mutual inclusion") +
+  ylab("Model") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+```
+
+
+```{r}
+mi %>% 
+    filter(!is.na(value)) %>% 
+    group_by(model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Comparison", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+mi %>% 
+    filter(!is.na(value)) %>% 
+    group_by(dataset, model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "Comparison", "Q1", "Mean", "Median", "Q3"))
+```
+
+### Correlations
+
+```{r}
+corr <- d_long %>% 
+  filter(name %in% c("corr_tau_rmatrix", "corr_tau_anchor")) %>% 
+  mutate(name=case_when(
+    name == "corr_tau_anchor" ~ "Anchor",
+    name == "corr_tau_rmatrix" ~ "RMatrix"
+  ))
+
+ggplot(corr, aes(y=model_bb, x=value, fill=name)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="") +
+  xlab("Tau Kendall") +
+  ylab("Model") +
+  xlim(-1,1) +
+  theme(legend.position = "top")
+```
+
+```{r}
+corr %>% 
+    filter(!is.na(value)) %>% 
+    group_by(model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Comparison", "Q1", "Mean", "Median", "Q3"))
+
+```
+
+```{r}
+corr %>% 
+    filter(!is.na(value)) %>% 
+    group_by(dataset, model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "Comparison", "Q1", "Mean", "Median", "Q3"))
+
+```
+
+### Rule coverage
+
+```{r}
+anchor_stat <- d_long %>% 
+  filter(name %in% c("rmatrix_coverage", "anchor_coverage")) %>% 
+  mutate(name=case_when(
+    name == "rmatrix_coverage" ~ "RMatrix",
+    name == "anchor_coverage" ~ "Anchor"
+  ))
+
+ggplot(anchor_stat, aes(y=model_bb, x=value, fill=name)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="") +
+  xlab("Coverage") +
+  ylab("Model") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+
+```
+
+```{r}
+anchor_stat %>% 
+    filter(!is.na(value)) %>% 
+    group_by(model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Explainer", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+anchor_stat %>% 
+    filter(!is.na(value)) %>% 
+    group_by(dataset, model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "Comparison", "Q1", "Mean", "Median", "Q3"))
+```
+
+### Rule precision
+
+```{r}
+anchor_stat <- d_long %>% 
+  filter(name %in% c("rmatrix_precision", "anchor_precision")) %>% 
+  mutate(name=case_when(
+    name == "rmatrix_precision" ~ "RMatrix",
+    name == "anchor_precision" ~ "Anchor"
+  ))
+
+ggplot(anchor_stat, aes(y=model_bb, x=value, fill=name)) +
+  geom_boxplot() +
+  scale_fill_discrete(name="") +
+  xlab("Precision") +
+  ylab("Model") +
+  xlim(0,1) +
+  theme(legend.position = "top")
+
+```
+
+```{r}
+anchor_stat %>% 
+    filter(!is.na(value)) %>% 
+    group_by(model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Model", "Explainer", "Q1", "Mean", "Median", "Q3"))
+```
+
+```{r}
+anchor_stat %>% 
+    filter(!is.na(value)) %>% 
+    group_by(dataset, model_bb, name) %>% 
+    summarise(# min=min(value),
+              q1=quantile(value, 0.25),
+              mean=mean(value),
+              median=median(value),
+              q3=quantile(value, 0.75),
+              # max=max(value)
+              ) %>% 
+    mutate_if(is.numeric, round, digits=2) %>% 
+  knitr::kable(col.names=c("Dataset", "Model", "Comparison", "Q1", "Mean", "Median", "Q3"))
+```
+
+:::
+
+```{r}
+library(scales)
+library(ggtext)
+
+# hex <- hue_pal()(4)
+
+hex <- c("#F8766D", "#00BA38", "#619CFF", "#C77CFF")
+
+anchor_prec_cov <- read_csv("results/anchor_mi_corr_all_global.csv") %>% 
+  filter(measure==measure1) %>% 
+  separate(model, c("model_bb", "model_number"), "_") %>% 
+  select(-measure, -model_number) %>% 
+  group_by(dataset, model_bb) %>% 
+  mutate(id=row_number()) %>% 
+  group_by(dataset, model_bb) %>% 
+summarise(avg_rule_coverage=mean(anchor_coverage),
+avg_rule_precision=mean(anchor_precision)) %>% 
+pivot_longer(avg_rule_coverage:avg_rule_precision) %>% 
+mutate(approx="Anchor",
+model_bb=ifelse(model_bb=="SVC","SVM",model_bb)) %>% 
+ungroup()
+
+
+rmatrix_all %>% 
+  filter(name %in% c("avg_rule_coverage", "avg_rule_precision"),
+        dataset %in% anchor_prec_cov$dataset,
+        approx != "RMatrix without FI") %>% 
+  bind_rows(., anchor_prec_cov) %>% 
+  mutate(name=factor(name, levels=c("avg_rule_coverage", "avg_rule_precision"), labels=c("Coverage", "Precision")),
+         approx=factor(approx, levels=c("RMatrix with global FI", "RMatrix with local FI", "Anchor"),
+                       labels = c("RMatrix with global FI", "RMatrix with local FI", "Anchor"))) %>% 
+  ggplot(aes(x=value, y=model_bb, fill=fct_rev(approx))) +
+  geom_boxplot() +
+  scale_fill_manual(name="Approximator", values = c("#C77CFF", "#F8766D", "#00BA38"),
+labels = c( "Anchor", "SC-OR with local *fo*", "SC-OR with global *fo*")) +
+  xlab("Statistic's value") +
+  ylab("Model type") +
+  facet_wrap(~name, scales="free_x") +
+  theme(legend.position = "top", legend.text = element_markdown())
+
+ggsave("article/rule_prec_cov_anchor.pdf", width = 8, height = 5)
+
+```
+
