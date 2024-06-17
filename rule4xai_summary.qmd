@@ -1,6 +1,6 @@
 ---
-title: "Rule4XAI - C2"
-subtitle: "Supplementary materials" 
+title: "Fusion of rule induction and XAI-based feature importance for explaining decisions of black box models for tabular data"
+subtitle: "Supplementary materials - precision measure" 
 format: 
   html: 
     self-contained: true
@@ -12,6 +12,9 @@ execute:
 ---
 
 ```{r}
+# measure1 = "c2"
+# measure2 = "c2"
+
 measure1 = "precision"
 measure2 = "Prec"
 ```
@@ -1346,6 +1349,9 @@ anchor_stat %>%
 :::
 
 ```{r}
+#| include: false
+#| 
+
 library(scales)
 library(ggtext)
 
